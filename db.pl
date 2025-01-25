@@ -53,7 +53,6 @@ process_line(Line, OutputStream) :-
     (   is_spouse_line(Line)
         ->  write('Spouse Rule'), nl,
             split_names(Line, Husband, Wife),
-            write(Husband), nl,
             make_spouse_rule(Husband, Wife, OutputStream)
         ; 
         false
@@ -83,8 +82,8 @@ split_names(Input, Husband, Wife) :-
     atom_chars(Input, Chars),
 
     append(NameChars1, [' ', '<', '-', '>', ' ' | Rest], Chars),
-
-    atom_chars(Husband, NameChars1).
+    atom_chars(Husband, NameChars1),
+    atom_chars(Wife, Rest).
 
 make_gender_rule(Name, Gender, OutputStream) :-
     (
@@ -103,9 +102,10 @@ make_gender_rule(Name, Gender, OutputStream) :-
     ).
 
 make_spouse_rule(Husband, Wife, OutputStream) :-
-    atom_concat('spouse(', Husband, Temp),
-    atom_concat(Temp, ', ', Temp),
-    atom_concat(Temp, Wife, Temp),
-    atom_concat(Temp, ').', Result),
+    atom_concat('spouse(', Husband, Temp1),
+    atom_concat(Temp1, ', ', Temp2),
+    atom_concat(Temp2, Wife, Temp3),
+    atom_concat(Temp3, ').', Result),
+
     write(OutputStream, Result),
     write(OutputStream, '\n').    
