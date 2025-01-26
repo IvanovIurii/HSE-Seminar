@@ -3,6 +3,7 @@
 :- dynamic male/1.
 :- dynamic female/1.
 
+% Парсит входной файл на факты, которые добавляются в динамически в Prolog
 parse_input_file(InputFile) :-
     open(InputFile, read, InputStream),        
     
@@ -12,7 +13,7 @@ parse_input_file(InputFile) :-
 
 read_lines(InputStream) :-
     repeat,
-    read_line(InputStream, Line),
+    read_line_to_string(InputStream, Line),
     (   Line == end_of_file
     ->  !
     ;   nl,
@@ -21,21 +22,12 @@ read_lines(InputStream) :-
         fail
     ).
 
-read_line(InputStream, Line) :-
-    get_char(InputStream, Char),
-    (   Char == end_of_file
+read_line_to_string(InputStream, Line) :-
+    read_line_to_codes(InputStream, Codes),
+    (   Codes == end_of_file
     ->  Line = end_of_file
-    ;   read_line_chars(InputStream, Char, LineChars),
-        atom_chars(Line, LineChars)
+    ;   string_codes(Line, Codes)
     ).
-
-read_line_chars(_, '\n', []) :- !. 
-
-read_line_chars(_, end_of_file, []) :- !.
-
-read_line_chars(InputStream, Char, [Char | Rest]) :-
-    get_char(InputStream, NextChar),
-    read_line_chars(InputStream, NextChar, Rest).
 
 process_line(Line) :-
     (   is_gender_line(Line)
@@ -71,51 +63,20 @@ split_name_and_gender(Input, Name, Gender) :-
     atom_chars(Gender, GenderChars).
 
 split_names(Input, Husband, Wife, Delimiter) :-
-    atom_chars(Input, Chars),
-    atom_chars(Delimiter, DelimiterChars),
-
-    append(NameChars1, DelimiterCharsAndRest, Chars),
-    append(DelimiterChars, Rest, DelimiterCharsAndRest),
-    
-    atom_chars(Husband, NameChars1),
-    atom_chars(Wife, Rest).
+    atomic_list_concat([Husband, Wife], Delimiter, Input).
 
 add_gender_fact(Name, Gender) :-
     (
         Gender = 'М',
-        atom_concat('male(\'', Name, Temp),
-        atom_concat(Temp, '\')', Result),
-
-        write(' => Fact: '),
-        write(Result),
-        assertz(Result)
+        assertz(male(Name))
     );
     (
         Gender = 'Ж',
-        atom_concat('female(\'', Name, Temp),
-        atom_concat(Temp, '\')', Result),
-
-        write(' => Fact: '),
-        write(Result),
-        assertz(Result)
+        assertz(female(Name))
     ).
 
 add_spouse_fact(Husband, Wife) :-
-    atom_concat('spouse(\'', Husband, Temp1),
-    atom_concat(Temp1, '\', \'', Temp2),
-    atom_concat(Temp2, Wife, Temp3),
-    atom_concat(Temp3, '\').', Result),
-    
-    write(' => Fact: '),
-    write(Result),
-    assertz(Result).  
+    assertz(spouse(Husband, Wife)).  
 
 add_parent_child_fact(Parent, Child) :-
-    atom_concat('parent(\'', Parent, Temp1),
-    atom_concat(Temp1, '\', \'', Temp2),
-    atom_concat(Temp2, Child, Temp3),
-    atom_concat(Temp3, '\').', Result),
-
-    write(' => Fact: '),
-    write(Result),
-    assertz(Result).  
+    assertz(parent(Parent, Child)).  
