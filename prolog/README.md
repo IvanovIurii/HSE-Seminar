@@ -23,22 +23,24 @@ The input file should contain lines in one of the following formats:
 3. **Parent-child relationship:**
    - `Богдан -> Целестина` to indicate that John is a parent of Mary.
 
-## Output File Format
+## Result of parsing
 
-The output file will contain Prolog predicates corresponding to the input data, such as:
+There is no output file, facts are added in to Prolog interactive program dynamiccally using predicate `assertz/1`.
+
+Each single line of the input file is parsed into fact like this:
 
 ```prolog
-male('Александр').
-female('Дана (Ж)').
-spouse('Богдан', 'Мария').
-parent('Павел', 'Александра').
+male('Александр')
+female('Дана (Ж)')
+spouse('Богдан', 'Мария')
+parent('Павел', 'Александра')
 ```
 
 ## How to Run
 
 ### Prerequisites
 
-- Ensure you have **GNU Prolog** installed on your system.
+- Ensure you have **SWI Prolog** installed on your system.
 
 ### Steps to Execute
 
@@ -47,7 +49,7 @@ parent('Павел', 'Александра').
 3. Start GNU Prolog:
 
    ```bash
-   gprolog
+   swipl
    ```
 
 4. Load the Prolog program:
@@ -59,27 +61,11 @@ parent('Павел', 'Александра').
 5. Run the parsing process by invoking:
 
    ```prolog
-   parse_input_file('input.txt', 'people.pl').
+   parse_input_file('input.txt').
     ```
 
-6. Check the generated `people.pl` file for the output predicates.
+6. Check the generated rules are available by typing:
 
-### Example
-
-#### Input File (`input.txt`)
-
-```text
-Авдей (М)
-Александра (Ж)
-Ростислав <-> Александра
-Корнилий -> Владимир
-```
-
-#### Generated Output File (`people.pl`)
-
-```prolog
-male('Авдей').
-female('Александра').
-spouse('Ростислав', 'Александра').
-parent('Корнилий', 'Владимир').
-```
+   ```prolog
+   father(X, Y).
+   ```

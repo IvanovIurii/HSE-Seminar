@@ -3,7 +3,7 @@
 :- dynamic male/1.
 :- dynamic female/1.
 
-% Парсит входной файл на факты, которые добавляются в динамически в Prolog
+% Парсит входной файл на факты, которые добавляются динамически в Prolog
 parse_input_file(InputFile) :-
     open(InputFile, read, InputStream),        
     
