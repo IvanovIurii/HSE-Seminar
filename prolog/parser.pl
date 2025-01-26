@@ -1,19 +1,23 @@
-parse_input_file(InputFile, OutputFile) :-
-    open(InputFile, read, InputStream),    
-    open(OutputFile, append, OutputStream),
-    
-    read_lines(InputStream, OutputStream),
-    
-    close(InputStream),
-    close(OutputStream).
+:- dynamic parent/2.
+:- dynamic spouse/2.
+:- dynamic male/1.
+:- dynamic female/1.
 
-read_lines(InputStream, OutputStream) :-
+parse_input_file(InputFile) :-
+    open(InputFile, read, InputStream),        
+    
+    read_lines(InputStream),
+    
+    close(InputStream).
+
+read_lines(InputStream) :-
     repeat,
     read_line(InputStream, Line),
     (   Line == end_of_file
     ->  !
-    ;   write(Line), nl,
-        process_line(Line, OutputStream),
+    ;   nl,
+        write(Line),
+        process_line(Line),
         fail
     ).
 
@@ -33,18 +37,18 @@ read_line_chars(InputStream, Char, [Char | Rest]) :-
     get_char(InputStream, NextChar),
     read_line_chars(InputStream, NextChar, Rest).
 
-process_line(Line, OutputStream) :-
+process_line(Line) :-
     (   is_gender_line(Line)
         ->  split_name_and_gender(Line, Name, Gender),    
-            make_gender_rule(Name, Gender, OutputStream)
+            add_gender_fact(Name, Gender)
         ; 
         is_spouse_line(Line)
         ->  split_names(Line, Husband, Wife, ' <-> '),
-            make_spouse_rule(Husband, Wife, OutputStream) 
+            add_spouse_fact(Husband, Wife) 
         ;
         is_parent_child_line(Line)
         ->  split_names(Line, Parent, Child, ' -> '),
-            make_parent_child_rule(Parent, Child, OutputStream)
+            add_parent_child_fact(Parent, Child)
     ).
 
 is_gender_line(Line) :-
@@ -76,36 +80,42 @@ split_names(Input, Husband, Wife, Delimiter) :-
     atom_chars(Husband, NameChars1),
     atom_chars(Wife, Rest).
 
-make_gender_rule(Name, Gender, OutputStream) :-
+add_gender_fact(Name, Gender) :-
     (
         Gender = 'М',
         atom_concat('male(\'', Name, Temp),
-        atom_concat(Temp, '\').', Result),
-        write(OutputStream, Result),
-        write(OutputStream, '\n')
+        atom_concat(Temp, '\')', Result),
+
+        write(' => Fact: '),
+        write(Result),
+        assertz(Result)
     );
     (
         Gender = 'Ж',
         atom_concat('female(\'', Name, Temp),
-        atom_concat(Temp, '\').', Result),
-        write(OutputStream, Result),
-        write(OutputStream, '\n')
+        atom_concat(Temp, '\')', Result),
+
+        write(' => Fact: '),
+        write(Result),
+        assertz(Result)
     ).
 
-make_spouse_rule(Husband, Wife, OutputStream) :-
+add_spouse_fact(Husband, Wife) :-
     atom_concat('spouse(\'', Husband, Temp1),
     atom_concat(Temp1, '\', \'', Temp2),
     atom_concat(Temp2, Wife, Temp3),
     atom_concat(Temp3, '\').', Result),
+    
+    write(' => Fact: '),
+    write(Result),
+    assertz(Result).  
 
-    write(OutputStream, Result),
-    write(OutputStream, '\n').    
-
-make_parent_child_rule(Parent, Child, OutputStream) :-
+add_parent_child_fact(Parent, Child) :-
     atom_concat('parent(\'', Parent, Temp1),
     atom_concat(Temp1, '\', \'', Temp2),
     atom_concat(Temp2, Child, Temp3),
     atom_concat(Temp3, '\').', Result),
 
-    write(OutputStream, Result),
-    write(OutputStream, '\n').   
+    write(' => Fact: '),
+    write(Result),
+    assertz(Result).  
