@@ -66,6 +66,7 @@ fun main() {
             people[person.first] = person.second
         }
 
+        
         parsePartners(line)?.let { partnersPair ->
             addToMap(partners, partnersPair.first, partnersPair.second)
             addToMap(partners, partnersPair.second, partnersPair.first)
@@ -166,7 +167,7 @@ private fun test(people: List<Person>) {
 
 private fun search(people: List<Person>, searchString: String) {
     var found = false
-    // todo: split by 2 methods
+    // todo: split in 2 methods
     var justName = "";
     if (searchString.contains("?")) {
         justName = searchString.replace("? ", "")
@@ -198,3 +199,10 @@ private fun search(people: List<Person>, searchString: String) {
         println("Not found by search string '$searchString'\n")
     }
 }
+
+// todo: print male/1, female/1, spouse/2, parent/2 to stdout as logs
+// todo: create Person via Kotlin DSL {name, sex}
+// todo: create a graph, not a tree
+// todo: return error if 2 spouses or mariange between the same sex
+
+// todo: get relations - father / mother / grandfather / grandmother / brother / sister / grandparent
