@@ -130,5 +130,3 @@ format_relatives([Relation | Rest]) :-
     Relation =.. [RelationType, Person, _],
     write(Person), write(' - '), write(RelationType), nl,
     format_relatives(Rest).
-
-%query_relatives('Семён').
