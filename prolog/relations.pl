@@ -7,7 +7,7 @@ married(X, Y) :-
      \+ spouse(X, Y) -> spouse(Y, X) ; spouse(X, Y).
 
 father(F, C) :- parent(F, C), male(F).
-mother(M, C) :- parent(M, C), female(M).
+mother(M, C) :- parent(M, C), female(M) ; father(F, C), wife(M, F).
 child(C, P) :- parent(P, C).
 son(S, P) :- child(S, P), male(S).
 daughter(D, P) :- child(D, P), female(D).
@@ -35,8 +35,8 @@ niece(N, A) :- child(N, P), sibling(P, A), female(N).
 husband(H, W) :- married(H, W), male(H).
 wife(W, H) :- married(H, W), female(W).
 
-father_in_law(FIL, CHILD) :- mother(M, CHILD), husband(FIL, M).
-mother_in_law(MIL, CHILD) :- father(F, CHILD), wife(MIL, F).
+father_in_law(FIL, P) :- parent(FIL, S), married(S, P), male(FIL).
+mother_in_law(MIL, P) :- parent(MIL, S), married(S, P), female(MIL). 
 
 son_in_law(SIL, P) :- married(SIL, D), child(D, P), male(SIL).
 daughter_in_law(DIL, P) :- married(DIL, S), child(S, P), female(DIL).
