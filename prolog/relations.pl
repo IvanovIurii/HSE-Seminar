@@ -3,8 +3,11 @@
 :- dynamic male/1.
 :- dynamic female/1.
 
+married(X, Y) :-
+     \+ spouse(X, Y) -> spouse(Y, X) ; spouse(X, Y).
+
 father(F, C) :- parent(F, C), male(F).
-mother(M, C) :- parent(M, C), female(M).
+mother(M, C) :- parent(M, C), female(M) ; father(F, C), wife(M, F).
 child(C, P) :- parent(P, C).
 son(S, P) :- child(S, P), male(S).
 daughter(D, P) :- child(D, P), female(D).
@@ -29,20 +32,20 @@ uncle_in_law(U, N) :- husband(U, A), sister(A, P), parent(P, N).
 nephew(N, A) :- child(N, P), sibling(P, A), male(N).
 niece(N, A) :- child(N, P), sibling(P, A), female(N).
 
-husband(H, W) :- spouse(H, W), male(H).
-wife(W, H) :- spouse(H, W), female(W).
+husband(H, W) :- married(H, W), male(H).
+wife(W, H) :- married(H, W), female(W).
 
-father_in_law(FIL, P) :- parent(FIL, S), spouse(S, P), male(FIL).
-mother_in_law(MIL, P) :- parent(MIL, S), spouse(S, P), female(MIL).
+father_in_law(FIL, P) :- parent(FIL, S), married(S, P), male(FIL).
+mother_in_law(MIL, P) :- parent(MIL, S), married(S, P), female(MIL). 
 
-son_in_law(SIL, P) :- spouse(SIL, D), child(D, P), male(SIL).
-daughter_in_law(DIL, P) :- spouse(DIL, S), child(S, P), female(DIL).
+son_in_law(SIL, P) :- married(SIL, D), child(D, P), male(SIL).
+daughter_in_law(DIL, P) :- married(DIL, S), child(S, P), female(DIL).
 
-dever(D, W) :- brother(D, H), spouse(H, W).    % Деверь (брат мужа)
-shurin(S, H) :- brother(S, W), spouse(W, H).   % Шурин (брат жены)
+dever(D, W) :- brother(D, H), married(H, W).    % Деверь (брат мужа)
+shurin(S, H) :- brother(S, W), married(W, H).   % Шурин (брат жены)
 
-zolovka(Z, W) :- sister(Z, H), spouse(H, W).        % Золовка (сестра мужа)
-svoyachinitza(S, H) :- sister(S, W), spouse(W, H).  % Свояченица (сестра жены)
+zolovka(Z, W) :- sister(Z, H), married(H, W).        % Золовка (сестра мужа)
+svoyachinitza(S, H) :- sister(S, W), married(W, H).  % Свояченица (сестра жены)
 
 relatives(Name, Relatives) :-
     findall(Rel, (
