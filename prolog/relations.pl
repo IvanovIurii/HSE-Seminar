@@ -25,9 +25,9 @@ brother(B, S) :- sibling(B, S), male(B).
 sister(S, B) :- sibling(S, B), female(S).
 
 aunt(A, N) :- sister(A, P), parent(P, N).
-aunt_in_law(A, N) :- wife(A, U), brother(U, P), parent(P, N).
+aunt_in_law(A, N) :- wife(A, U), brother(U, P), parent(P, N). % жена дяди
 uncle(U, N) :- brother(U, P), parent(P, N).
-uncle_in_law(U, N) :- husband(U, A), sister(A, P), parent(P, N).
+uncle_in_law(U, N) :- husband(U, A), sister(A, P), parent(P, N). % муж тёти
 
 nephew(N, A) :- child(N, P), sibling(P, A), male(N).
 niece(N, A) :- child(N, P), sibling(P, A), female(N).
@@ -128,5 +128,33 @@ process_command(_) :-
 format_relatives([]).
 format_relatives([Relation | Rest]) :-
     Relation =.. [RelationType, Person, _],
-    write(Person), write(' - '), write(RelationType), nl,
+    relation_label(RelationType, Label),
+    write(Label), write(' - '), write(Person), nl,
     format_relatives(Rest).
+
+relation_label(father, 'Отец').
+relation_label(mother, 'Мать').
+relation_label(son, 'Сын').
+relation_label(daughter, 'Дочь').
+relation_label(brother, 'Брат').
+relation_label(sister, 'Сестра').
+relation_label(husband, 'Муж').
+relation_label(wife, 'Жена').
+relation_label(uncle, 'Дядя').
+relation_label(uncle_in_law, 'Муж тёти').
+relation_label(aunt, 'Тётя').
+relation_label(aunt_in_law, 'Жена дяди').
+relation_label(grandfather, 'Дедушка').
+relation_label(grandmother, 'Бабушка').
+relation_label(grandson, 'Внук').
+relation_label(granddaughter, 'Внучка').
+relation_label(son_in_law, 'Зять').
+relation_label(daughter_in_law, 'Невестка').
+relation_label(father_in_law, 'Тесть').
+relation_label(mother_in_law, 'Тёща').
+relation_label(nephew, 'Племянник').
+relation_label(niece, 'Племянница').
+relation_label(dever, 'Деверь').
+relation_label(shurin, 'Шурин').
+relation_label(zolovka, 'Золовка').
+relation_label(svoyachinitza, 'Свояченица').
