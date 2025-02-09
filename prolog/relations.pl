@@ -105,7 +105,7 @@ process_command(add_relation(spouse, Spouse1, Spouse2)) :-
 
 process_command(query_relatives(Name)) :-
     relatives(Name, Relatives),
-    write('Родственники для '), write(Name), write(': '), nl,
+    write('Родственники для имени "'), write(Name), write('": '), nl,
     format_relatives(Relatives).
 
 process_command(help) :-
