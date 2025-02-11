@@ -73,7 +73,37 @@ parent('Павел', 'Александра')
    ```prolog
    father(X, Y).
    ```
+   
 This should print all the available relationships like `father -> child`.
+
+### How to add new relation
+
+For example we want to add a new relation, great uncle (двоюродный дедушка), how would we proceed?
+
+1. Rezlize if you have a great uncle at all. For this we can use already defined relations and call from CLI where `swipl` running:
+
+```bash
+grandfather(GF, Name), brother(GB, GF).
+```
+
+This wil give us all the possible matches for this predicate, for example:
+
+```bash
+grandfather(GF, ME), brother(GB, GF).
+GF = 'Константин',
+ME = 'Марина',
+GB = 'Сильвестр' ;
+GF = 'Константин',
+ME = 'Урбан',
+GB = 'Сильвестр' ;
+GF = 'Ярослав',
+ME = 'Анфиса',
+GB = 'Максим' .
+```
+
+2. We can see that, `Урбан` for example has a great uncle `Сильвестр`, then we can verify in `input.txt`, if it was a valid predicate.
+3. After we just add to `relations.pl` an entry: `great_uncle(Name, GU) :- grandfather(GF, Name), brother(GU, GF).`
+4. After re-compiling, we call `great_uncle('Урбан', RESULT).` and make sure RESULT is `Сильвестр`.
 
 ## Tutorials
 
