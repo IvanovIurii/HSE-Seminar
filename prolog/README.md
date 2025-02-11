@@ -1,13 +1,17 @@
-# Input File Parser
+# Prolog Program
 
-This Prolog program parses a given text file containing relationship data and generates Prolog rules from it. The program reads an input file, processes each line, and writes corresponding Prolog predicates to an output file.
+Disclaimer: this README is only about parser, ad not about how to program in prolog.
+
+## Input File Parser
+
+This parser parses a given text file containing relationship data in specific format and generates Prolog facts from it. The program reads an input file, processes each line, and writes corresponding Prolog predicates to the Prolog knowledge base.
 
 ## Features
 
 - Detects and processes gender lines (e.g., `Авдей (М)` or `Аврора (Ж)`).
 - Detects and processes spouse relationships (`Назар <-> Кира`).
 - Detects and processes parent-child relationships (`Богдан -> Целестина`).
-- Generates Prolog predicates for `male/1`, `female/1`, `spouse/2`, and `parent/2`.
+- Generates Prolog facts as `male/1`, `female/1`, `spouse/2`, and `parent/2`.
 
 ## Input File Format
 
@@ -25,9 +29,9 @@ The input file should contain lines in one of the following formats:
 
 ## Result of parsing
 
-There is no output file, facts are added in to Prolog interactive program dynamiccally using predicate `assertz/1`.
+There is no output file, facts are added in to Prolog interactive program (knowledge vase) dynamiccally using predicate `assertz/1`.
 
-Each single line of the input file is parsed into fact like this:
+Each single line of the input file is parsed into facts like this:
 
 ```prolog
 male('Александр')
@@ -44,8 +48,8 @@ parent('Павел', 'Александра')
 
 ### Steps to Execute
 
-1. Prepare an input file with the specified format (e.g., `input.txt`) or use `input_short.txt` for testing.
-2. Open a terminal and navigate to the directory containing `parser.pl` and `input.txt`.
+1. Prepare an input file with the specified format (e.g., `input.txt`) or use `input_short.txt` for testing/debugging.
+2. Open a terminal and navigate to the directory containing `porogram.pl` and `input.txt`.
 3. Start GNU Prolog:
 
    ```bash
@@ -55,7 +59,7 @@ parent('Павел', 'Александра')
 4. Load the Prolog program:
 
    ```prolog
-   [parser].
+   [program].
     ```
 
 5. Run the parsing process by invoking:
@@ -69,6 +73,8 @@ parent('Павел', 'Александра')
    ```prolog
    father(X, Y).
    ```
+   
+This should print all the available relationships like `father -> child`.
 
 ### How to add new relation
 
@@ -98,3 +104,9 @@ GB = 'Максим' .
 2. We can see that, `Урбан` for example has a great uncle `Сильвестр`, then we can verify in `input.txt`, if it was a valid predicate.
 3. After we just add to `relations.pl` an entry: `great_uncle(Name, GU) :- grandfather(GF, Name), brother(GU, GF).`
 4. After re-compiling, we call `great_uncle('Урбан', RESULT).` and make sure RESULT is `Сильвестр`.
+
+## Tutorials
+
+1. [Prolog Tutorials](https://youtu.be/SykxWpFwMGs)
+2. [Production Prolog](https://youtu.be/G_eYTctGZw8)
+3. [Sudoku in Prolog](https://youtu.be/5KUdEZTu06o)
