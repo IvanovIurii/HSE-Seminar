@@ -1,6 +1,6 @@
 # Prolog Program
 
-Disclaimer: this README is only about parser, ad not about how to program in prolog.
+Disclaimer: this README is only about parser, and not about how to program in prolog.
 
 ## Input File Parser
 
