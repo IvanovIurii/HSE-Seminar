@@ -80,7 +80,7 @@ This should print all the available relationships like `father -> child`.
 
 For example we want to add a new relation, great uncle (двоюродный дедушка), how would we proceed?
 
-1. Rezlize if you have a great uncle at all. For this we can use already defined relations and call from CLI where `swipl` running:
+1. Check if you have a great uncle at all. For this we can use already defined relations and call from CLI where `swipl` running:
 
 ```bash
 grandfather(GF, Name), brother(GB, GF).
