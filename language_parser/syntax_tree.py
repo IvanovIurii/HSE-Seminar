@@ -1,6 +1,3 @@
-from tokenizer import left_values
-
-
 class Node:
     def __init__(self, type, value=None):
         self.type = type
@@ -36,19 +33,15 @@ def parse_expression(tokens):
 
 
 def get_lines(tokens):
-    l_values = list(map(lambda token: token[0], left_values))
-
     lines = []
     line = []
+
     for token in tokens:
-        if line and token.kind in l_values:
+        if token.key == 'NEWLINE':
             lines.append(line)
             line = []
-
-        line.append(Node(token.kind, token.value))
-
-    if line:
-        lines.append(line)
+        else:
+            line.append(Node(token.key, token.value))
 
     return lines
 

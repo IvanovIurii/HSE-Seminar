@@ -1,10 +1,11 @@
 from interpreter import Interpreter
+from language_parser.tokenizer import Tokenizer
 from syntax_tree import parse
-from tokenizer import tokenize
 
 
 def main(code):
-    tokens = list(tokenize(code))
+    tokenizer = Tokenizer
+    tokens = list(tokenizer.tokenize(code))
     ast = parse(tokens)
 
     interpreter = Interpreter()
