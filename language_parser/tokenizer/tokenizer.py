@@ -3,7 +3,7 @@ from language_parser.tokenizer.consts import (
     single_char_tokens,
     reserved,
     NUMBER,
-    IDENTIFICATOR,
+    IDENTIFIER,
     NEWLINE
 )
 
@@ -77,7 +77,7 @@ class Tokenizer:
                 else:
                     tokens.append(
                         Token(
-                            key=IDENTIFICATOR,
+                            key=IDENTIFIER,
                             value=lexeme
                         )
                     )
@@ -106,7 +106,7 @@ class Tokenizer:
         if lexeme:
             tokens.append(
                 Token(
-                    key=IDENTIFICATOR,
+                    key=IDENTIFIER,
                     value=lexeme
                 )
             )

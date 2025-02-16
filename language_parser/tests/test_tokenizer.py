@@ -5,6 +5,21 @@ from language_parser.tokenizer.tokenizer import Token
 
 class TestTokenizer(unittest.TestCase):
 
+    # Munus sum a b = a + b
+
+    def test_should_tokenize_sum_function(self):
+        code = '''
+            Munus sum a b = a + b
+            As computo = sum XI C
+            Grafo computo
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+
+        # assumption: function name is also lowercase
+        pass
+
     # should get list of tokens
     def test_should_tokenize(self):
         code = '''

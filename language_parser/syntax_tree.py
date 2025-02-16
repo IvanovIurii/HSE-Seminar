@@ -1,3 +1,6 @@
+from language_parser.tokenizer.consts import NEWLINE
+
+
 class Node:
     def __init__(self, type, value=None):
         self.type = type
@@ -10,10 +13,10 @@ class Node:
     def __repr__(self):
         return f"{self.type}: {self.value}"
 
-    def print_recursively(self, node):
-        print(node)
+    def print_recursively(self, indent=0):
+        print("  " * indent + str(self))
         for child in self.children:
-            self.print_recursively(child)
+            child.print_recursively(indent + 1)
 
 
 def parse_expression(tokens):
@@ -33,15 +36,24 @@ def parse_expression(tokens):
 
 
 def get_lines(tokens):
+    """
+    Splits the token list (from the tokenizer) into a list of lines.
+    Each line is a list of Nodes (converted from tokens).
+    """
     lines = []
-    line = []
+    current_line = []
 
     for token in tokens:
-        if token.key == 'NEWLINE':
-            lines.append(line)
-            line = []
+        if token.key == NEWLINE:
+            if current_line:
+                lines.append(current_line)
+                current_line = []
         else:
-            line.append(Node(token.key, token.value))
+            current_line.append(Node(token.key, token.value))
+
+    # todo: check if this one is needed
+    if current_line:
+        lines.append(current_line)
 
     return lines
 
@@ -71,6 +83,21 @@ def parse(tokens):
 
                 root.add_child(node)
 
-            # todo: add IN statement
+            if node.type == 'FUNC':
+                id_node = line[idx + 1]  # ID of function
+
+                i = 2
+                while line[idx + i].type != "EQ":
+                    id_node.add_child(line[idx + i])
+                    i += 1
+
+                node.add_child(id_node)
+
+                eq_node = line[idx + i]
+                node.add_child(eq_node)
+
+                node.add_child(parse_expression(line[i + 1:]))
+
+                root.add_child(node)
 
     return root

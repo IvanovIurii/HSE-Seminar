@@ -16,10 +16,9 @@ def main(code):
 
 
 code = '''
-    As uno = XI + C
-    As de = Anagnosi
-    As tre = uno + de - L
-    Grafo tre
+    Munus sum a b = a + b
+    As computo = sum XI C
+    Grafo computo
     '''
 
 main(code)
