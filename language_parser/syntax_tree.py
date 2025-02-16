@@ -1,4 +1,5 @@
-from language_parser.tokenizer.consts import NEWLINE
+from language_parser.tokenizer.consts import NEWLINE, IDENTIFIER, NUMBER
+from language_parser.tokenizer import Tokenizer
 
 
 class Node:
@@ -20,19 +21,70 @@ class Node:
 
 
 def parse_expression(tokens):
-    left_node = tokens.pop(0)
+    return parse_addition(tokens)
 
-    # todo: better operate with kind, not with its implementation
-    while tokens and tokens[0].value in ['+', '-', '*', '/']:
-        operator_node = tokens.pop(0)
-        right_node = tokens.pop(0)
 
-        operator_node.add_child(left_node)
-        operator_node.add_child(right_node)
+def parse_addition(tokens):
+    left = parse_multiplication(tokens)
 
-        left_node = operator_node
+    while tokens and tokens[0].type in ['PLUS', 'MINUS']:
+        bin_op = tokens.pop(0)
 
-    return left_node
+        right = parse_multiplication(tokens)
+
+        bin_op.add_child(left)
+        bin_op.add_child(right)
+
+        left = bin_op
+
+    return left
+
+
+def parse_multiplication(tokens):
+    left = parse_application(tokens)
+
+    while tokens and tokens[0].type in ['MULT', 'DIV']:
+        bin_op = tokens.pop(0)
+
+        right = parse_application(tokens)
+
+        bin_op.add_child(left)
+        bin_op.add_child(right)
+        left = bin_op
+
+    return left
+
+
+def parse_application(tokens):  # todo: rename
+    node = parse_first(tokens)  # id or number
+
+    # not sure here, but
+    # if there is ID or NUMBER after ID without op,
+    # most likely we are in a function call
+    if tokens and tokens[0].type in [IDENTIFIER, NUMBER]:
+        call_node = Node('CALL', node.value)
+
+        while tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
+            arg = parse_first(tokens)
+            call_node.add_child(arg)
+
+            node = call_node
+
+    return node
+
+
+def parse_first(tokens):  # todo: rename
+    token = tokens.pop(0)
+    if token.type in ['ID', 'NUMBER']:
+        return token
+
+    if token.type == 'LP':
+        expression = parse_expression(tokens)
+        tokens.pop(0)  # close RP
+
+        return expression
+
+    raise ValueError("Unexpected initial token in the expression: " + str(token))
 
 
 def get_lines(tokens):
@@ -51,53 +103,83 @@ def get_lines(tokens):
         else:
             current_line.append(Node(token.key, token.value))
 
-    # todo: check if this one is needed
-    if current_line:
-        lines.append(current_line)
-
     return lines
+
+
+def parse_statement(tokens):
+    if not tokens:
+        return None
+
+    first = tokens[0]
+    if first.type == 'FUNC':
+        # minimal function definition is 5 tokens: FUNC <name> <param> EQ <expression>
+        if len(tokens) < 5:
+            raise ValueError("Invalid function definition")
+        func = first
+        func_name = tokens[1]
+        params = []
+        i = 2
+        while tokens[i].type != 'EQ':
+            params.append(tokens[i])
+            i += 1
+
+        # todo: test broken functional token without EQ, without expression, with invalid param names
+        # if i >= len(tokens) or tokens[i].type != 'EQ':
+        #     raise ValueError("Missing '=' in function definition")
+
+        eq = tokens[i]
+        i += 1
+        expression = parse_expression(tokens[i:])
+        for p in params:
+            func_name.add_child(p)
+
+        func.add_child(func_name)
+        func.add_child(eq)
+        func.add_child(expression)
+
+        return func
+
+    if first.type == 'ASSIGN':
+        # minimal assign definition is 4 tokens: AS <ID> EQ <expression>
+        if len(tokens) < 4:
+            raise ValueError("Invalid assignment statement: " + " ".join(t.value for t in tokens))  # todo: test this
+
+        first.add_child(tokens[1])  # ID
+        first.add_child(tokens[2])  # EQ
+        expression = parse_expression(tokens[3:])
+        first.add_child(expression)
+
+        return first
+
+    if first.type == 'OUT':
+        # minimal assign definition: OUT <ID>
+        if len(tokens) != 2:
+            raise ValueError("Invalid output statement")
+
+        first.add_child(tokens[1])
+        return first
 
 
 def parse(tokens):
     root = Node('ROOT', 'root')
-
     lines = get_lines(tokens)
     for line in lines:
-        for idx, _ in enumerate(line):
-            node = line[idx]
-            if node.type == 'ASSIGN':
-                id_node = line[idx + 1]  # ID
-                node.add_child(id_node)
-
-                eq_node = line[idx + 2]  # EQ
-                node.add_child(eq_node)
-
-                # recursively add the right side
-                node.add_child(parse_expression(line[3:]))
-
-                root.add_child(node)
-
-            if node.type == 'OUT':
-                id_node = line[idx + 1]  # ID
-                node.add_child(id_node)
-
-                root.add_child(node)
-
-            if node.type == 'FUNC':
-                id_node = line[idx + 1]  # ID of function
-
-                i = 2
-                while line[idx + i].type != "EQ":
-                    id_node.add_child(line[idx + i])
-                    i += 1
-
-                node.add_child(id_node)
-
-                eq_node = line[idx + i]
-                node.add_child(eq_node)
-
-                node.add_child(parse_expression(line[i + 1:]))
-
-                root.add_child(node)
+        stmt = parse_statement(line)
+        if stmt:
+            root.add_child(stmt)
 
     return root
+
+
+if __name__ == '__main__':
+    code = """
+        Munus sum a b c = a + b + c
+        As computo = sum XI C I
+        Grafo computo
+        """
+
+    tokens = Tokenizer.tokenize(code)
+    ast_root = parse(tokens)
+    ast_root.print_recursively()
+
+    # todo: introduce comments as %%

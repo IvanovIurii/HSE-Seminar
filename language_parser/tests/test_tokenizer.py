@@ -4,9 +4,6 @@ from language_parser.tokenizer.tokenizer import Token
 
 
 class TestTokenizer(unittest.TestCase):
-
-    # Munus sum a b = a + b
-
     def test_should_tokenize_sum_function(self):
         code = '''
             Munus sum a b = a + b
