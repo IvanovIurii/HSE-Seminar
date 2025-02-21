@@ -11,7 +11,8 @@ from language_parser.tokenizer.consts import (
     FUNC,
     EQ,
     ASSIGN,
-    OUT
+    OUT,
+    BRANCH
 )
 from language_parser.tokenizer import Tokenizer
 
@@ -33,7 +34,8 @@ class Node:
     def print_recursively(self, indent=0):
         print("  " * indent + str(self))
         for child in self.children:
-            child.print_recursively(indent + 1)
+            if child:
+                child.print_recursively(indent + 1)
 
 
 # <statement>    ::= <func> | <assignment> | <output>
@@ -54,6 +56,7 @@ class Node:
 #
 # <letter>       ::= "a" | "b" | "c" | ... | "z" // lowercase
 
+# todo: refactor this function and add branch to the grammar
 def parse_expression(tokens):
     left = parse_term(tokens)
 
@@ -104,19 +107,29 @@ def parse_factor(tokens):
 
 
 def parse_primary(tokens):
-    token = tokens.pop(0)
-    if token.type in [IDENTIFIER, NUMBER]:
-        return token
+    if tokens and tokens[0].type == BRANCH:
+        branch_token = tokens.pop(0)
+        node = parse_expression(tokens)
 
-    if token.type == LP:
-        expression = parse_expression(tokens)
-        closing = tokens.pop(0)
-        if closing.type != RP:
-            raise ValueError("Missing closing parenthesis")
+        branch_token.add_child(node.children[0])  # false
+        branch_token.add_child(node.children[1])  # true
 
-        return expression
+        return branch_token
 
-    raise ValueError("Unexpected initial token in the expression: " + str(token))
+    if tokens:
+        token = tokens.pop(0)
+        if token.type in [IDENTIFIER, NUMBER]:
+            return token
+
+        if token.type == LP:
+            expression = parse_expression(tokens)
+            closing = tokens.pop(0)
+            if closing.type != RP:
+                raise ValueError("Missing closing parenthesis")
+
+            return expression
+
+        raise ValueError("Unexpected initial token in the expression: " + str(token))
 
 
 def get_lines(tokens):
