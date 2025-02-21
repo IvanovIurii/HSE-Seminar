@@ -59,3 +59,25 @@ class TestSyntaxTree(unittest.TestCase):
         ast = parse(tokens)
 
         ast.print_recursively()
+
+    def test_should_build_ast_for_ops_with_parenthesis(self):
+        code = '''
+            As computo = XI + (D - L)
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        ast.print_recursively()
+
+    def test_should_build_ast_for_function_inside_with(self):
+        code = '''
+            As sum = XI + (min a b)
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        ast.print_recursively()

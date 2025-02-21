@@ -1,6 +1,22 @@
-from language_parser.tokenizer.consts import NEWLINE, IDENTIFIER, NUMBER
+from language_parser.tokenizer.consts import (
+    NEWLINE,
+    IDENTIFIER,
+    NUMBER,
+    PLUS,
+    MINUS,
+    MULT,
+    DIV,
+    LP,
+    RP,
+    FUNC,
+    EQ,
+    ASSIGN,
+    OUT
+)
 from language_parser.tokenizer import Tokenizer
 
+
+# todo: create a class called AST or something
 
 class Node:
     def __init__(self, type, value=None):
@@ -20,17 +36,31 @@ class Node:
             child.print_recursively(indent + 1)
 
 
+# <statement>    ::= <func> | <assignment> | <output>
+#
+# <func>     ::= "Munus" <identifier> { <identifier> } "=" <expression>
+# <assignment>   ::= "As" <identifier> "=" <expression>
+# <output>       ::= "Grafo" <identifier>
+#
+# <expression>   ::= <term> { ("+" | "-") <term> }
+# <term>         ::= <factor> { ("*" | "/") <factor> }
+# <factor>       ::= <primary> { <primary> } // function call
+# <primary>      ::= <identifier> | <number> | "(" <expression> ")"
+#
+# <identifier>   ::= <letter> { <letter> }
+# <number>       ::= <roman_numeral>
+# <roman_numeral>::= <roman_digit> { <roman_digit> }
+# <roman_digit>  ::= "I" | "V" | "X" | "L" | "C" | "D" | "M"
+#
+# <letter>       ::= "a" | "b" | "c" | ... | "z" // lowercase
+
 def parse_expression(tokens):
-    return parse_addition(tokens)
+    left = parse_term(tokens)
 
-
-def parse_addition(tokens):
-    left = parse_multiplication(tokens)
-
-    while tokens and tokens[0].type in ['PLUS', 'MINUS']:
+    while tokens and tokens[0].type in [PLUS, MINUS]:
         bin_op = tokens.pop(0)
 
-        right = parse_multiplication(tokens)
+        right = parse_term(tokens)
 
         bin_op.add_child(left)
         bin_op.add_child(right)
@@ -40,13 +70,13 @@ def parse_addition(tokens):
     return left
 
 
-def parse_multiplication(tokens):
-    left = parse_application(tokens)
+def parse_term(tokens):
+    left = parse_factor(tokens)
 
-    while tokens and tokens[0].type in ['MULT', 'DIV']:
+    while tokens and tokens[0].type in [MULT, DIV]:
         bin_op = tokens.pop(0)
 
-        right = parse_application(tokens)
+        right = parse_factor(tokens)
 
         bin_op.add_child(left)
         bin_op.add_child(right)
@@ -55,17 +85,17 @@ def parse_multiplication(tokens):
     return left
 
 
-def parse_application(tokens):  # todo: rename
-    node = parse_first(tokens)  # id or number
+def parse_factor(tokens):
+    node = parse_primary(tokens)  # id, number or parenthesis
 
     # not sure here, but
-    # if there is ID or NUMBER after ID without op,
-    # most likely we are in a function call
-    if tokens and tokens[0].type in [IDENTIFIER, NUMBER]:
+    # if there is ID or NUMBER, or LP/RP after ID without op,
+    # most likely we are in a function call, or it is a (grouped) expression
+    if tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
         call_node = Node('CALL', node.value)
 
         while tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
-            arg = parse_first(tokens)
+            arg = parse_primary(tokens)
             call_node.add_child(arg)
 
             node = call_node
@@ -73,14 +103,16 @@ def parse_application(tokens):  # todo: rename
     return node
 
 
-def parse_first(tokens):  # todo: rename
+def parse_primary(tokens):
     token = tokens.pop(0)
-    if token.type in ['ID', 'NUMBER']:
+    if token.type in [IDENTIFIER, NUMBER]:
         return token
 
-    if token.type == 'LP':
+    if token.type == LP:
         expression = parse_expression(tokens)
-        tokens.pop(0)  # close RP
+        closing = tokens.pop(0)
+        if closing.type != RP:
+            raise ValueError("Missing closing parenthesis")
 
         return expression
 
@@ -111,7 +143,7 @@ def parse_statement(tokens):
         return None
 
     first = tokens[0]
-    if first.type == 'FUNC':
+    if first.type == FUNC:
         # minimal function definition is 5 tokens: FUNC <name> <param> EQ <expression>
         if len(tokens) < 5:
             raise ValueError("Invalid function definition")
@@ -119,7 +151,7 @@ def parse_statement(tokens):
         func_name = tokens[1]
         params = []
         i = 2
-        while tokens[i].type != 'EQ':
+        while tokens[i].type != EQ:
             params.append(tokens[i])
             i += 1
 
@@ -139,7 +171,7 @@ def parse_statement(tokens):
 
         return func
 
-    if first.type == 'ASSIGN':
+    if first.type == ASSIGN:
         # minimal assign definition is 4 tokens: AS <ID> EQ <expression>
         if len(tokens) < 4:
             raise ValueError("Invalid assignment statement: " + " ".join(t.value for t in tokens))  # todo: test this
@@ -151,7 +183,7 @@ def parse_statement(tokens):
 
         return first
 
-    if first.type == 'OUT':
+    if first.type == OUT:
         # minimal assign definition: OUT <ID>
         if len(tokens) != 2:
             raise ValueError("Invalid output statement")
