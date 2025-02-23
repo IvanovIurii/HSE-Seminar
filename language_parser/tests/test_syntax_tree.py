@@ -1,6 +1,6 @@
 import unittest
 
-from language_parser.syntax_tree import parse
+from syntax_tree.syntax_tree import parse
 from language_parser.tokenizer import Tokenizer
 from language_parser.tokenizer.consts import FUNC, IDENTIFIER, EQ, PLUS
 
@@ -109,4 +109,5 @@ class TestSyntaxTree(unittest.TestCase):
         tokens = tokenizer.tokenize(code)
         ast = parse(tokens)
 
-        ast.print_recursively()
+        # todo fix mermaid for branch
+        ast.print_mermaid()

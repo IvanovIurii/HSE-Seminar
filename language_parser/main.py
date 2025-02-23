@@ -1,6 +1,6 @@
 from interpreter import Interpreter
 from language_parser.tokenizer import Tokenizer
-from syntax_tree import parse
+from syntax_tree.syntax_tree import parse
 
 
 def main(code):

@@ -37,6 +37,43 @@ class Node:
             if child:
                 child.print_recursively(indent + 1)
 
+    def print_mermaid(self):
+        print("```mermaid")
+        print("graph TD")
+
+        root = self.__assign_mermaid_id()
+        root.__print_children()
+
+        print("```")
+
+    def __assign_mermaid_id(self):
+        for child in self.children:
+            if child:
+                if child.type in [NUMBER, IDENTIFIER]:
+                    child.mermaid_id = f'{self.type}_{child.value.upper()}'
+                else:
+                    child.mermaid_id = f'{self.type}_{child.type.upper()}'
+
+                child.__assign_mermaid_id()
+
+        return self
+
+    def __print_children(self):
+        # print all child node declarations
+        for child in self.children:
+            print(f"{child.mermaid_id}[{child.type}:{child.value}]")
+
+        # print all edges from this parent to each child
+        for child in self.children:
+            if hasattr(self, 'mermaid_id'):
+                print(f"{self.mermaid_id} --> {child.mermaid_id}")
+            else:
+                print(f"{self.type} --> {child.mermaid_id}")
+
+        for child in self.children:
+            if child:
+                child.__print_children()
+
 
 # <statement>    ::= <func> | <assignment> | <output>
 #
@@ -47,7 +84,7 @@ class Node:
 # <expression>   ::= <term> { ("+" | "-") <term> }
 # <term>         ::= <factor> { ("*" | "/") <factor> }
 # <factor>       ::= <primary> { <primary> } // function call
-# <primary>      ::= <identifier> | <number> | "(" <expression> ")"
+# <primary>      ::= <identifier> | <number> | "(" <expression> ")" | branch <expression>
 #
 # <identifier>   ::= <letter> { <letter> }
 # <number>       ::= <roman_numeral>
@@ -225,6 +262,7 @@ if __name__ == '__main__':
 
     tokens = Tokenizer.tokenize(code)
     ast_root = parse(tokens)
-    ast_root.print_recursively()
+
+    ast_root.print_mermaid()
 
     # todo: introduce comments as %%
