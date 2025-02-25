@@ -1,6 +1,6 @@
 import unittest
 
-from syntax_tree.syntax_tree import parse
+from language_parser.syntax_tree.syntax_tree import parse
 from language_parser.tokenizer import Tokenizer
 from language_parser.tokenizer.consts import FUNC, IDENTIFIER, EQ, PLUS
 
@@ -56,6 +56,24 @@ class TestSyntaxTree(unittest.TestCase):
 
         ast.print_recursively()
 
+    # should be:
+    #
+    # CALL: sum
+    #   ID a
+    #   PLUS: +
+    #       NUMBER: I
+    #       NUMBER: XI
+    def test_should_build_ast_for_function_invocation_sum_first(self):
+        code = '''
+            As duo = sum a (I + XI)
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        ast.to_mermaid_markdown("Sum")
+
     def test_should_build_ast_for_function_invocation_with_op_and_parenthesis(self):
         code = '''
             As tres = sum XI (D + L)
@@ -102,7 +120,7 @@ class TestSyntaxTree(unittest.TestCase):
 
     def test_should_build_ast_for_ternary_operator_statement(self):
         code = '''
-            Munus fib n = Sinon n I ((fib n - I) + (fib n - II))
+            Munus fib n = Sinon n I ((fib (n - I)) + (fib (n - II)))
         '''
 
         tokenizer = Tokenizer
@@ -110,4 +128,16 @@ class TestSyntaxTree(unittest.TestCase):
         ast = parse(tokens)
 
         # todo fix mermaid for branch
-        ast.print_mermaid()
+        ast.to_mermaid_markdown("Sinon")
+
+    def test_foo(self):
+        code = '''
+            As foo = fib (n - I)
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        # todo fix mermaid for branch
+        ast.to_mermaid_markdown("Assign fib")

@@ -1,3 +1,4 @@
+from language_parser.syntax_tree.mermaid import save_mermaid_to_markdown
 from language_parser.tokenizer.consts import (
     NEWLINE,
     IDENTIFIER,
@@ -15,6 +16,7 @@ from language_parser.tokenizer.consts import (
     BRANCH
 )
 from language_parser.tokenizer import Tokenizer
+import inspect
 
 
 # todo: create a class called AST or something
@@ -37,42 +39,8 @@ class Node:
             if child:
                 child.print_recursively(indent + 1)
 
-    def print_mermaid(self):
-        print("```mermaid")
-        print("graph TD")
-
-        root = self.__assign_mermaid_id()
-        root.__print_children()
-
-        print("```")
-
-    def __assign_mermaid_id(self):
-        for child in self.children:
-            if child:
-                if child.type in [NUMBER, IDENTIFIER]:
-                    child.mermaid_id = f'{self.type}_{child.value.upper()}'
-                else:
-                    child.mermaid_id = f'{self.type}_{child.type.upper()}'
-
-                child.__assign_mermaid_id()
-
-        return self
-
-    def __print_children(self):
-        # print all child node declarations
-        for child in self.children:
-            print(f"{child.mermaid_id}[{child.type}:{child.value}]")
-
-        # print all edges from this parent to each child
-        for child in self.children:
-            if hasattr(self, 'mermaid_id'):
-                print(f"{self.mermaid_id} --> {child.mermaid_id}")
-            else:
-                print(f"{self.type} --> {child.mermaid_id}")
-
-        for child in self.children:
-            if child:
-                child.__print_children()
+    def to_mermaid_markdown(self, name):
+        save_mermaid_to_markdown(self, name)
 
 
 # <statement>    ::= <func> | <assignment> | <output>
@@ -93,7 +61,7 @@ class Node:
 #
 # <letter>       ::= "a" | "b" | "c" | ... | "z" // lowercase
 
-# todo: refactor this function and add branch to the grammar
+# todo: refactor this function
 def parse_expression(tokens):
     left = parse_term(tokens)
 
@@ -128,33 +96,25 @@ def parse_term(tokens):
 def parse_factor(tokens):
     node = parse_primary(tokens)  # id, number or parenthesis
 
-    # not sure here, but
-    # if there is ID or NUMBER, or LP/RP after ID without op,
-    # most likely we are in a function call, or it is a (grouped) expression
-    if tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
-        call_node = Node('CALL', node.value)
-
-        while tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
-            arg = parse_primary(tokens)
-            call_node.add_child(arg)
-
-            node = call_node
+    while tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
+        arg = parse_primary(tokens)
+        node.add_child(arg)
 
     return node
 
 
-def parse_primary(tokens):
+def parse_primary(tokens, is_function=False):
     if tokens and tokens[0].type == BRANCH:
         branch_token = tokens.pop(0)
-        node = parse_expression(tokens)
-
-        branch_token.add_child(node.children[0])  # false
-        branch_token.add_child(node.children[1])  # true
+        condition_expression = parse_expression(tokens)
+        #  todo: maybe new type
+        branch_token.add_child(condition_expression)
 
         return branch_token
 
     if tokens:
         token = tokens.pop(0)
+
         if token.type in [IDENTIFIER, NUMBER]:
             return token
 

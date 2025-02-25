@@ -1,2 +1,3 @@
 .idea
 .DS_Store
+language_parser/syntax_tree/out/*
