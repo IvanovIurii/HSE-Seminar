@@ -48,6 +48,7 @@ class TestInterpreter(unittest.TestCase):
             As uno = XI + C
         '''
 
+        # todo: print only when GRAFO!!!
         tokenizer = Tokenizer
         tokens = tokenizer.tokenize(code)
         ast = parse(tokens)
