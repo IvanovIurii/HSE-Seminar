@@ -40,7 +40,7 @@ STYLES = {
     OUT: "red",
     FUNC: "red",
     BRANCH: "red",
-    IN: "red"
+    IN: "red"  # todo: why does not work?
 }
 
 
@@ -49,7 +49,8 @@ class MyHighlighter(QtGui.QSyntaxHighlighter):
         super().__init__(document)
 
     def highlightBlock(self, text):
-        tokens = Tokenizer.tokenize(text)
+        # fixme: fails on unexpected characters, i.e. #
+        tokens = Tokenizer.tokenize(text + " ")  # hack: to color the last char in the block
 
         for token in tokens:
             expression = QRegExp(token.value)
@@ -103,6 +104,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def run_code(self):
         text = self.editor.toPlainText()
+        # hack: new line to correctly parse AST
+        text += "\n"
+
         tokens = Tokenizer.tokenize(text)
 
         try:
@@ -111,6 +115,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if len(ast_root.children) == 0:
                 print("Nothing to evaluate")
 
+            self.find_input_and_replace(ast_root)
+
             interpreter = Interpreter()
             evaluated = interpreter.interpret(ast_root)
             self.output.appendPlainText(str(evaluated))
@@ -118,6 +124,44 @@ class MainWindow(QtWidgets.QMainWindow):
         # todo: handle exceptions properly
         except Exception as e:
             print(f"Something went wrong: {e}")
+
+    def find_input_and_replace(self, node):
+        if node.type == IN:
+            dialog = InputDialog()
+            user_input = dialog.get_text()
+
+            node.type = NUMBER
+            node.value = user_input
+
+            return True
+
+        for child in node.children:
+            if child:
+                self.find_input_and_replace(child)
+
+
+class InputDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Enter Roman Number")
+
+        layout = QtWidgets.QVBoxLayout(self)
+        self.text_edit = QtWidgets.QPlainTextEdit(self)
+        layout.addWidget(self.text_edit)
+
+        button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel, self)
+        layout.addWidget(button_box)
+
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+
+    # TODO: handle errors - at least to console
+    def get_text(self):
+        if self.exec_() == QtWidgets.QDialog.Accepted:
+            return self.text_edit.toPlainText()
+
+        return None
 
 
 if __name__ == '__main__':

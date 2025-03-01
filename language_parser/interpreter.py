@@ -2,7 +2,7 @@ import copy
 
 from language_parser.syntax_tree.syntax_tree import parse
 from language_parser.tokenizer import Tokenizer
-from language_parser.tokenizer.consts import NUMBER, IDENTIFIER, FUNC, ASSIGN, OUT, PLUS, MINUS, MULT, DIV
+from language_parser.tokenizer.consts import NUMBER, IDENTIFIER, FUNC, ASSIGN, OUT, PLUS, MINUS, MULT, DIV, IN
 
 
 def roman_to_int(roman):
@@ -82,6 +82,17 @@ class Interpreter:
 
         # Assignment: "As <identifier> '=' <expression>"
         if node.type == ASSIGN:
+            # todo: refactor this branch
+            if node.children[2].type == IN:
+                var_name_node = node.children[0]
+                var_name = var_name_node.value
+                # todo: or should it be roman?
+                var = input("Enter your INT value here:\n")
+                int_var = int(var)
+
+                self.env[var_name] = int_var
+                return int_var
+
             var_name_node = node.children[0]
             var_name = var_name_node.value
             expr = node.children[2]
@@ -158,9 +169,10 @@ class Interpreter:
 
 if __name__ == '__main__':
     code = """
-        Munus sum a b c = a + b + c
-        As computo = sum XI C I
-        Grafo computo
+        As uno = XI + C
+        As de = Anagnosi
+        As tre = uno + de
+        Grafo tre
         """
 
     tokens = Tokenizer.tokenize(code)

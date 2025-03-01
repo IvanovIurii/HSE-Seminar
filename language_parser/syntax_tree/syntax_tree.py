@@ -13,10 +13,10 @@ from language_parser.tokenizer.consts import (
     EQ,
     ASSIGN,
     OUT,
-    BRANCH
+    BRANCH,
+    IN
 )
 from language_parser.tokenizer import Tokenizer
-import inspect
 
 
 # todo: create a class called AST or something
@@ -43,6 +43,7 @@ class Node:
         save_mermaid_to_markdown(self, name)
 
 
+# todo: add IN
 # <statement>    ::= <func> | <assignment> | <output>
 #
 # <func>     ::= "Munus" <identifier> { <identifier> } "=" <expression>
@@ -103,7 +104,7 @@ def parse_factor(tokens):
     return node
 
 
-def parse_primary(tokens, is_function=False):
+def parse_primary(tokens):
     if tokens and tokens[0].type == BRANCH:
         branch_token = tokens.pop(0)
         condition_expression = parse_expression(tokens)
@@ -115,7 +116,7 @@ def parse_primary(tokens, is_function=False):
     if tokens:
         token = tokens.pop(0)
 
-        if token.type in [IDENTIFIER, NUMBER]:
+        if token.type in [IDENTIFIER, NUMBER, IN]:
             return token
 
         if token.type == LP:
@@ -144,6 +145,9 @@ def get_lines(tokens):
                 current_line = []
         else:
             current_line.append(Node(token.key, token.value))
+
+    if current_line:
+        lines.append(current_line)
 
     return lines
 
@@ -215,14 +219,13 @@ def parse(tokens):
 
 if __name__ == '__main__':
     code = """
-        Munus sum a b c = a + b + c
-        As computo = sum XI C I
-        Grafo computo
+        As uno = XI + C
+        As de = Anagnosi
         """
 
     tokens = Tokenizer.tokenize(code)
     ast_root = parse(tokens)
 
-    ast_root.print_mermaid()
+    ast_root.print_recursively()
 
     # todo: introduce comments as %%
