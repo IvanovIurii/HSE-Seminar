@@ -1,0 +1,20 @@
+digraph stateDiagram {
+    // Initial pseudo state
+    start [shape=point];
+    start -> INITIAL;
+
+    // Transitions from INITIAL state
+    INITIAL -> INITIAL [label="space, tab, newline"];
+    INITIAL -> INITIAL [label="operator (+, -, *, /, =, (, ), ,)"];
+    INITIAL -> LOWERCASE [label="letter (a-z)"];
+    INITIAL -> UPPERCASE [label="letter (A-Z)"];
+    INITIAL -> ERROR [label="other (error)"];
+
+    // Transitions from LOWERCASE (building an identifier)
+    LOWERCASE -> LOWERCASE [label="a-z"];
+    LOWERCASE -> INITIAL [label="non-lowercase (end of token)"];
+
+    // Transitions from UPPERCASE (building a reserved word or NUMBER)
+    UPPERCASE -> UPPERCASE [label="A-Za-z"];
+    UPPERCASE -> INITIAL [label="non-letter (end of token)"];
+}
