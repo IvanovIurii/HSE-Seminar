@@ -1,5 +1,5 @@
 from enum import Enum
-from language_parser.tokenizer.consts import (
+from language_parser.common.consts import (
     single_char_tokens,
     reserved,
     NUMBER,

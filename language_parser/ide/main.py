@@ -4,10 +4,10 @@ from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import QRegExp
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QAction
 
-from language_parser.interpreter import Interpreter
+from language_parser.interpreter.interpreter import Interpreter
 from language_parser.syntax_tree.syntax_tree import parse
 from language_parser.tokenizer import Tokenizer
-from language_parser.tokenizer.consts import (
+from language_parser.common.consts import (
     NUMBER,
     IDENTIFIER,
     NEWLINE,

@@ -1,6 +1,6 @@
 import unittest
 from language_parser.tokenizer import Tokenizer
-from language_parser.tokenizer.consts import (
+from language_parser.common.consts import (
     FUNC,
     IDENTIFIER,
     PLUS,
@@ -20,6 +20,7 @@ from language_parser.tokenizer.tokenizer import Token
 
 class TestTokenizer(unittest.TestCase):
 
+    # positive cases
     def test_should_tokenize(self):
         code = '''
             As uno = XI + C
@@ -132,3 +133,17 @@ class TestTokenizer(unittest.TestCase):
         ]
 
         self.assertListEqual(tokens, expected_tokens)
+
+    # negative cases
+    def test_should_throw_error_on_unknown_char(self):
+        code = '''
+            #
+        '''
+
+        tokenizer = Tokenizer
+
+        with self.assertRaises(ValueError) as cm:
+            tokenizer.tokenize(code)
+
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Unexpected character: #")

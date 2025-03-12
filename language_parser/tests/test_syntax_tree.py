@@ -2,10 +2,12 @@ import unittest
 
 from language_parser.syntax_tree.syntax_tree import parse
 from language_parser.tokenizer import Tokenizer
-from language_parser.tokenizer.consts import FUNC, IDENTIFIER, EQ, PLUS
+from language_parser.common.consts import FUNC, IDENTIFIER, EQ, PLUS
 
 
 class TestSyntaxTree(unittest.TestCase):
+
+    # positive cases
     def test_should_build_ast_for_function_declaration(self):
         code = '''
             Munus sum a b c = a + b + c
@@ -34,6 +36,17 @@ class TestSyntaxTree(unittest.TestCase):
         self.assertEquals(func.children[2].children[0].children[1].type, IDENTIFIER)
         self.assertEquals(func.children[2].children[0].children[1].value, 'b')
 
+    def test_should_assign_one_roman_number(self):
+        code = '''
+            As uno = X
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        ast.print_recursively()
+
     def test_should_build_ast_for_numbers(self):
         code = '''
             As uno = XI + C
@@ -55,24 +68,6 @@ class TestSyntaxTree(unittest.TestCase):
         ast = parse(tokens)
 
         ast.print_recursively()
-
-    # should be:
-    #
-    # CALL: sum
-    #   ID a
-    #   PLUS: +
-    #       NUMBER: I
-    #       NUMBER: XI
-    def test_should_build_ast_for_function_invocation_sum_first(self):
-        code = '''
-            As duo = sum a (I + XI)
-        '''
-
-        tokenizer = Tokenizer
-        tokens = tokenizer.tokenize(code)
-        ast = parse(tokens)
-
-        ast.to_mermaid_markdown("Sum")
 
     def test_should_build_ast_for_function_invocation_with_op_and_parenthesis(self):
         code = '''
@@ -96,20 +91,9 @@ class TestSyntaxTree(unittest.TestCase):
 
         ast.print_recursively()
 
-    def test_should_build_ast_for_function_inside_with(self):
+    def test_should_build_ast_for_function_inside_parenthesis(self):
         code = '''
             As minimum = XI + (min a b)
-        '''
-
-        tokenizer = Tokenizer
-        tokens = tokenizer.tokenize(code)
-        ast = parse(tokens)
-
-        ast.print_recursively()
-
-    def test_should_assign_one_roman_number(self):
-        code = '''
-            As uno = X
         '''
 
         tokenizer = Tokenizer
@@ -127,17 +111,62 @@ class TestSyntaxTree(unittest.TestCase):
         tokens = tokenizer.tokenize(code)
         ast = parse(tokens)
 
-        # todo fix mermaid for branch
-        ast.to_mermaid_markdown("Sinon")
+        ast.print_recursively()
 
-    def test_foo(self):
+    # negative cases (syntax errors)
+
+    def test_should_throw_an_error_on_invalid_assignment(self):
         code = '''
-            As foo = fib (n - I)
+            uno = X
         '''
 
         tokenizer = Tokenizer
         tokens = tokenizer.tokenize(code)
-        ast = parse(tokens)
 
-        # todo fix mermaid for branch
-        ast.to_mermaid_markdown("Assign fib")
+        with self.assertRaises(ValueError) as cm:
+            ast = parse(tokens)
+
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Invalid start")
+
+    def test_should_throw_an_error_on_missed_parenthesis(self):
+        code = '''
+            As duo = (uno + de
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+
+        with self.assertRaises(ValueError) as cm:
+            ast = parse(tokens)
+
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Missing closing parenthesis")
+
+    def test_should_throw_an_error_on_unexpected_initial_expression_token(self):
+        code = '''
+            As duo = )
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+
+        with self.assertRaises(ValueError) as cm:
+            ast = parse(tokens)
+
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Unexpected initial token in the expression")
+
+    def test_should_throw_an_error_on_function_without_implementation(self):
+        code = '''
+            Munus sum a b
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+
+        with self.assertRaises(ValueError) as cm:
+            ast = parse(tokens)
+
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Invalid function definition")

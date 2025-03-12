@@ -1,6 +1,6 @@
 import pathlib
 
-from language_parser.tokenizer.consts import NUMBER, IDENTIFIER
+from language_parser.common.consts import NUMBER, IDENTIFIER
 
 
 def save_mermaid_to_markdown(node, name):

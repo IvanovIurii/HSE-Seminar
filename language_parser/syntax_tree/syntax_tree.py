@@ -1,5 +1,5 @@
 from language_parser.syntax_tree.mermaid import save_mermaid_to_markdown
-from language_parser.tokenizer.consts import (
+from language_parser.common.consts import (
     NEWLINE,
     IDENTIFIER,
     NUMBER,
@@ -43,7 +43,6 @@ class Node:
         save_mermaid_to_markdown(self, name)
 
 
-# todo: add IN
 # <statement>    ::= <func> | <assignment> | <output>
 #
 # <func>     ::= "Munus" <identifier> { <identifier> } "=" <expression>
@@ -53,7 +52,7 @@ class Node:
 # <expression>   ::= <term> { ("+" | "-") <term> }
 # <term>         ::= <factor> { ("*" | "/") <factor> }
 # <factor>       ::= <primary> { <primary> } // function call
-# <primary>      ::= <identifier> | <number> | "(" <expression> ")" | branch <expression>
+# <primary>      ::= <identifier> | <number> | <input> | "(" <expression> ")" | branch <expression>
 #
 # <identifier>   ::= <letter> { <letter> }
 # <number>       ::= <roman_numeral>
@@ -95,7 +94,7 @@ def parse_term(tokens):
 
 
 def parse_factor(tokens):
-    node = parse_primary(tokens)  # id, number or parenthesis
+    node = parse_primary(tokens)  # id, number, input, ternary operator or parenthesis
 
     while tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
         arg = parse_primary(tokens)
@@ -121,6 +120,9 @@ def parse_primary(tokens):
 
         if token.type == LP:
             expression = parse_expression(tokens)
+            if not tokens:
+                raise ValueError("Missing closing parenthesis")
+
             closing = tokens.pop(0)
             if closing.type != RP:
                 raise ValueError("Missing closing parenthesis")
@@ -132,7 +134,7 @@ def parse_primary(tokens):
 
 def get_lines(tokens):
     """
-    Splits the token list (from the tokenizer) into a list of lines.
+    Splits the token list (from the tokenizer) into a list of lines by NEWLINE token.
     Each line is a list of Nodes (converted from tokens).
     """
     lines = []
@@ -169,10 +171,6 @@ def parse_statement(tokens):
             params.append(tokens[i])
             i += 1
 
-        # todo: test broken functional token without EQ, without expression, with invalid param names
-        # if i >= len(tokens) or tokens[i].type != 'EQ':
-        #     raise ValueError("Missing '=' in function definition")
-
         eq = tokens[i]
         i += 1
         expression = parse_expression(tokens[i:])
@@ -200,10 +198,12 @@ def parse_statement(tokens):
     if first.type == OUT:
         # minimal assign definition: OUT <ID>
         if len(tokens) != 2:
-            raise ValueError("Invalid output statement")
+            raise ValueError("Invalid output statement")  # todo: test this
 
         first.add_child(tokens[1])
         return first
+
+    raise ValueError("Invalid start")
 
 
 def parse(tokens):
@@ -218,6 +218,7 @@ def parse(tokens):
 
 
 if __name__ == '__main__':
+    # todo: fix ast for this expression
     code = """
         As uno = XI + C
         As de = Anagnosi
@@ -226,6 +227,4 @@ if __name__ == '__main__':
     tokens = Tokenizer.tokenize(code)
     ast_root = parse(tokens)
 
-    ast_root.print_recursively()
-
-    # todo: introduce comments as %%
+    ast_root.to_mermaid_markdown("TEST")
