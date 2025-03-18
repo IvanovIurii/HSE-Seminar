@@ -160,8 +160,8 @@ def parse_statement(tokens):
 
     first = tokens[0]
     if first.type == FUNC:
-        # minimal function definition is 5 tokens: FUNC <name> <param> EQ <expression>
-        if len(tokens) < 5:
+        # minimal function definition is 5 tokens: FUNC <name> EQ <expression>
+        if len(tokens) < 4:
             raise ValueError("Invalid function definition")
         func = first
         func_name = tokens[1]
@@ -218,7 +218,6 @@ def parse(tokens):
 
 
 if __name__ == '__main__':
-    # todo: fix ast for this expression
     code = """
         As uno = XI + C
         As de = Anagnosi
@@ -227,4 +226,4 @@ if __name__ == '__main__':
     tokens = Tokenizer.tokenize(code)
     ast_root = parse(tokens)
 
-    ast_root.to_mermaid_markdown("TEST")
+    ast_root.print_recursively()

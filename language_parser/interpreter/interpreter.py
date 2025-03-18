@@ -1,5 +1,3 @@
-from language_parser.syntax_tree.syntax_tree import parse
-from language_parser.tokenizer import Tokenizer
 from language_parser.common.consts import (
     NUMBER,
     IDENTIFIER,
@@ -26,6 +24,7 @@ def roman_to_int(roman):
         else:
             total += value
             prev_value = value
+
     return total
 
 
@@ -42,6 +41,7 @@ def int_to_roman(num):
         while num >= value:
             roman += numeral
             num -= value
+
     return roman
 
 
@@ -62,13 +62,12 @@ class Interpreter:
         return int_to_roman(self.evaluate(ast, self.env))
 
     def evaluate(self, node, env=None):
-        if env is None:
-            env = self.env
-
         if node is None:
             return None
 
-        # --- Statement Level Evaluations ---
+        if env is None:
+            env = self.env
+
         if node.type == "ROOT":
             result = None
             for child in node.children:
@@ -76,7 +75,7 @@ class Interpreter:
 
             return result
 
-        # If node is a simple token (a leaf without children)
+        # If node is a simple term token (a leaf without children)
         if not hasattr(node, 'children') or node.children == []:
             if node.type == NUMBER:
                 return roman_to_int(node.value)
@@ -89,7 +88,8 @@ class Interpreter:
 
             return node.value
 
-        # Function definition: "Munus ..."
+        # todo: refactor this mess
+        # MUNUS
         if node.type == FUNC:
             func_name_node = node.children[0]
             func_name = func_name_node.value
@@ -117,7 +117,7 @@ class Interpreter:
 
             return result
 
-        # Output: "Grafo ..."
+        # GRAFO
         if node.type == OUT:
             var_name_node = node.children[0]
             var_name = var_name_node.value
@@ -125,6 +125,9 @@ class Interpreter:
                 result = env[var_name]
             else:
                 raise ValueError(f"Undefined variable '{var_name}'")
+
+            if isinstance(result, Function):
+                result = self.evaluate(result.body, env)
 
             print(result)
             return result
@@ -171,14 +174,5 @@ class Interpreter:
             # Ensure that the function itself is available for recursion.
             local_env[node.value] = func
             return self.evaluate(func.body, local_env)
-
-        if node.type == IDENTIFIER:
-            if node.value in env:
-                return env[node.value]
-            else:
-                raise ValueError(f"Undefined variable '{node.value}'")
-
-        if node.type == NUMBER:
-            return roman_to_int(node.value)
 
         return node.value

@@ -126,9 +126,10 @@ class TestInterpreter(unittest.TestCase):
 
         print(result)
 
+    # todo: fix it
     def test_foo(self):
         code = '''
-            Munus fun a = X
+            Munus fun = X + X
         '''
 
         tokenizer = Tokenizer
@@ -138,4 +139,19 @@ class TestInterpreter(unittest.TestCase):
         interpreter = Interpreter()
         result = interpreter.interpret(ast)
 
-        self.assertEquals(result, 21)
+        self.assertEquals(result, 'XX')
+
+    def test_print_X(self):
+        code = '''
+            Munus func = X
+            Grafo func
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        interpreter = Interpreter()
+        result = interpreter.interpret(ast)
+
+        self.assertEquals(result, 'X')
