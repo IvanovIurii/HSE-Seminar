@@ -10,7 +10,8 @@ from language_parser.common.consts import (
     DIV,
     IN,
     romans,
-    BRANCH
+    BRANCH,
+    reserved
 )
 
 
@@ -82,6 +83,13 @@ class Interpreter:
 
             if node.type == IDENTIFIER:
                 if node.value in env:
+                    if reserved[env[node.value]] == IN:
+                        var = input("Enter your ROMAN NUMBER here:\n")
+                        int_var = roman_to_int(var)
+                        env[node.value] = int_var
+
+                        return int_var
+
                     return env[node.value]
                 else:
                     raise ValueError(f"Undefined variable '{node.value}'")
@@ -104,8 +112,8 @@ class Interpreter:
             if node.children[2].type == IN:
                 var_name_node = node.children[0]
                 var_name = var_name_node.value
-                var = input("Enter your INT value here:\n")
-                int_var = int(var)
+                var = input("Enter your ROMAN NUMBER here:\n")
+                int_var = roman_to_int(var)
                 env[var_name] = int_var
                 return int_var
 
@@ -121,13 +129,15 @@ class Interpreter:
         if node.type == OUT:
             var_name_node = node.children[0]
             var_name = var_name_node.value
+
             if var_name in env:
                 result = env[var_name]
             else:
                 raise ValueError(f"Undefined variable '{var_name}'")
 
             if isinstance(result, Function):
-                result = self.evaluate(result.body, env)
+                args = [self.evaluate(child, env) for child in node.children]
+                result = args[0]
 
             print(result)
             return result
@@ -136,6 +146,7 @@ class Interpreter:
         if node.type in (PLUS, MINUS, MULT, DIV):
             left = self.evaluate(node.children[0], env)
             right = self.evaluate(node.children[1], env)
+
             if node.type == PLUS:
                 return left + right
             elif node.type == MINUS:
@@ -159,19 +170,22 @@ class Interpreter:
         # Function call: an IDENTIFIER node with children.
         if node.type == IDENTIFIER and node.children:
             func = env.get(node.value)
+
             if func is None:
                 raise ValueError(f"Undefined function '{node.value}'")
+
             if not isinstance(func, Function):
                 raise ValueError(f"'{node.value}' is not callable")
+
             args = [self.evaluate(child, env) for child in node.children]
             if len(args) != len(func.param_names):
                 raise ValueError(f"Function '{node.value}' expects {len(func.param_names)} arguments, got {len(args)}")
 
-            # Create a new local environment for the function call.
+            # Create a new local environment for the function call
             local_env = dict(env)
             for param, arg in zip(func.param_names, args):
                 local_env[param] = arg
-            # Ensure that the function itself is available for recursion.
+
             local_env[node.value] = func
             return self.evaluate(func.body, local_env)
 

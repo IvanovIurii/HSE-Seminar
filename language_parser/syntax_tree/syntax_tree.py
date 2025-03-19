@@ -96,7 +96,7 @@ def parse_term(tokens):
 def parse_factor(tokens):
     node = parse_primary(tokens)  # id, number, input, ternary operator or parenthesis
 
-    while tokens and (tokens[0].type in [IDENTIFIER, NUMBER] or tokens[0].value == '('):
+    while tokens and (tokens[0].type in [IDENTIFIER, NUMBER, IN] or tokens[0].value == '('):
         arg = parse_primary(tokens)
         node.add_child(arg)
 
@@ -160,7 +160,7 @@ def parse_statement(tokens):
 
     first = tokens[0]
     if first.type == FUNC:
-        # minimal function definition is 5 tokens: FUNC <name> EQ <expression>
+        # minimal function definition is 4 tokens: FUNC <name> EQ <expression>
         if len(tokens) < 4:
             raise ValueError("Invalid function definition")
         func = first
@@ -197,10 +197,12 @@ def parse_statement(tokens):
 
     if first.type == OUT:
         # minimal assign definition: OUT <ID>
-        if len(tokens) != 2:
-            raise ValueError("Invalid output statement")  # todo: test this
+        if len(tokens) < 2:
+            raise ValueError("Invalid output statement")
 
-        first.add_child(tokens[1])
+        expression = parse_expression(tokens[1:])
+        first.add_child(expression)
+
         return first
 
     raise ValueError("Invalid start")
@@ -218,6 +220,7 @@ def parse(tokens):
 
 
 if __name__ == '__main__':
+    # todo: fix this mermaid
     code = """
         As uno = XI + C
         As de = Anagnosi

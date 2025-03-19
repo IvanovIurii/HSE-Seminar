@@ -155,3 +155,49 @@ class TestInterpreter(unittest.TestCase):
         result = interpreter.interpret(ast)
 
         self.assertEquals(result, 'X')
+
+    def test_double_input_when_X_II(self):
+        code = '''
+            Munus sum a b = a + b
+            As uno = sum Anagnosi Anagnosi 
+            Grafo uno
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        interpreter = Interpreter()
+        result = interpreter.interpret(ast)
+
+        self.assertEquals(result, 'XII')
+
+    def test_input_when_single_V(self):
+        code = '''
+            As uno = Anagnosi 
+            Grafo uno
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        interpreter = Interpreter()
+        result = interpreter.interpret(ast)
+
+        self.assertEquals(result, 'V')
+
+    def test_double_input_when_I_I(self):
+        code = '''
+            Munus sum a b = a + b
+            Grafo sum Anagnosi Anagnosi 
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        interpreter = Interpreter()
+        result = interpreter.interpret(ast)
+
+        self.assertEquals(result, 'II')
