@@ -19,7 +19,7 @@ class TestInterpreter(unittest.TestCase):
         interpreter = Interpreter()
         result = interpreter.interpret(ast)
 
-        self.assertEquals(result, 21)
+        self.assertEquals(result, "XXI")
 
     def test_should_return_an_error(self):
         code = '''
@@ -42,6 +42,7 @@ class TestInterpreter(unittest.TestCase):
     def test_should_add(self):
         code = '''
             As uno = XI + C
+            Grafo uno
         '''
 
         tokenizer = Tokenizer
@@ -51,11 +52,12 @@ class TestInterpreter(unittest.TestCase):
         interpreter = Interpreter()
         result = interpreter.interpret(ast)
 
-        self.assertEqual(result, 111)
+        self.assertEqual(result, "CXI")
 
     def test_should_subtract(self):
         code = '''
             As uno = C - I
+            Grafo uno
         '''
 
         tokenizer = Tokenizer
@@ -65,11 +67,12 @@ class TestInterpreter(unittest.TestCase):
         interpreter = Interpreter()
         result = interpreter.interpret(ast)
 
-        self.assertEqual(result, 99)
+        self.assertEqual(result, "XCIX")
 
     def test_should_return_6(self):
         code = '''
             As uno = V - II + III
+            Grafo uno
         '''
 
         tokenizer = Tokenizer
@@ -79,11 +82,12 @@ class TestInterpreter(unittest.TestCase):
         interpreter = Interpreter()
         result = interpreter.interpret(ast)
 
-        self.assertEquals(result, 6)
+        self.assertEquals(result, "VI")
 
     def test_should_return_0(self):
         code = '''
             As uno = V - (II + III)
+            Grafo uno
         '''
 
         tokenizer = Tokenizer
@@ -93,7 +97,7 @@ class TestInterpreter(unittest.TestCase):
         interpreter = Interpreter()
         result = interpreter.interpret(ast)
 
-        self.assertEquals(result, 0)
+        self.assertEquals(result, "N")
 
     def test_should_throw_an_error_on_undefined_function(self):
         code = '''
@@ -126,10 +130,10 @@ class TestInterpreter(unittest.TestCase):
 
         print(result)
 
-    # todo: fix it
     def test_foo(self):
         code = '''
             Munus fun = X + X
+            Grafo fun
         '''
 
         tokenizer = Tokenizer
@@ -201,3 +205,34 @@ class TestInterpreter(unittest.TestCase):
         result = interpreter.interpret(ast)
 
         self.assertEquals(result, 'II')
+
+    def test_should_sum_with_multiple_functions_declaration(self):
+        code = '''
+            Munus ten = X
+            Munus sum a b = a + b
+            Grafo sum ten ten
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        interpreter = Interpreter()
+        result = interpreter.interpret(ast)
+
+        self.assertEquals(result, 'XX')
+
+    def test_should_sum_when_nested(self):
+        code = '''
+            Munus sum a b = a + b
+            Grafo sum (sum X I) II
+        '''
+
+        tokenizer = Tokenizer
+        tokens = tokenizer.tokenize(code)
+        ast = parse(tokens)
+
+        interpreter = Interpreter()
+        result = interpreter.interpret(ast)
+
+        self.assertEquals(result, 'XIII')

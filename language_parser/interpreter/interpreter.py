@@ -10,8 +10,7 @@ from language_parser.common.consts import (
     DIV,
     IN,
     romans,
-    BRANCH,
-    reserved
+    BRANCH
 )
 
 
@@ -60,7 +59,9 @@ class Interpreter:
         self.env = {}
 
     def interpret(self, ast):
-        return int_to_roman(self.evaluate(ast, self.env))
+        result = self.evaluate(ast, self.env)
+        if result or result == 0:
+            return int_to_roman(result)
 
     def evaluate(self, node, env=None):
         if node is None:
@@ -74,27 +75,10 @@ class Interpreter:
             for child in node.children:
                 result = self.evaluate(child, env)
 
+                if isinstance(result, Function):
+                    result = self.function_call(child.children[0], env)
+
             return result
-
-        # If node is a simple term token (a leaf without children)
-        if not hasattr(node, 'children') or node.children == []:
-            if node.type == NUMBER:
-                return roman_to_int(node.value)
-
-            if node.type == IDENTIFIER:
-                if node.value in env:
-                    if reserved[env[node.value]] == IN:
-                        var = input("Enter your ROMAN NUMBER here:\n")
-                        int_var = roman_to_int(var)
-                        env[node.value] = int_var
-
-                        return int_var
-
-                    return env[node.value]
-                else:
-                    raise ValueError(f"Undefined variable '{node.value}'")
-
-            return node.value
 
         # todo: refactor this mess
         # MUNUS
@@ -103,20 +87,17 @@ class Interpreter:
             func_name = func_name_node.value
             param_names = [child.value for child in func_name_node.children] if func_name_node.children else []
             func_body = node.children[2]
-            env[func_name] = Function(param_names, func_body)
 
+            # functional call without arguments, evaluate immediately
+            if not param_names:
+                env[func_name] = self.evaluate(func_body, env)
+                return None
+
+            env[func_name] = Function(param_names, func_body)
             return None
 
         # Assignment: "As <identifier> '=' <expression>"
         if node.type == ASSIGN:
-            if node.children[2].type == IN:
-                var_name_node = node.children[0]
-                var_name = var_name_node.value
-                var = input("Enter your ROMAN NUMBER here:\n")
-                int_var = roman_to_int(var)
-                env[var_name] = int_var
-                return int_var
-
             var_name_node = node.children[0]
             var_name = var_name_node.value
             expr = node.children[2]
@@ -135,12 +116,12 @@ class Interpreter:
             else:
                 raise ValueError(f"Undefined variable '{var_name}'")
 
-            if isinstance(result, Function):
-                args = [self.evaluate(child, env) for child in node.children]
-                result = args[0]
-
-            print(result)
             return result
+
+        if node.type == IN:
+            var = input("Enter your ROMAN NUMBER here:\n")
+            int_var = roman_to_int(var)
+            return int_var
 
         # Binary arithmetic operators: PLUS, MINUS, MULT, DIV
         if node.type in (PLUS, MINUS, MULT, DIV):
@@ -167,26 +148,40 @@ class Interpreter:
             else:
                 return self.evaluate(node.children[0].children[1], env)
 
-        # Function call: an IDENTIFIER node with children.
+        # Function call with arguments
         if node.type == IDENTIFIER and node.children:
-            func = env.get(node.value)
+            return self.function_call(node, env)
 
-            if func is None:
-                raise ValueError(f"Undefined function '{node.value}'")
+        # If node is a simple term token (a leaf without children)
+        if not hasattr(node, 'children') or node.children == []:
+            if node.type == NUMBER:
+                return roman_to_int(node.value)
 
-            if not isinstance(func, Function):
-                raise ValueError(f"'{node.value}' is not callable")
-
-            args = [self.evaluate(child, env) for child in node.children]
-            if len(args) != len(func.param_names):
-                raise ValueError(f"Function '{node.value}' expects {len(func.param_names)} arguments, got {len(args)}")
-
-            # Create a new local environment for the function call
-            local_env = dict(env)
-            for param, arg in zip(func.param_names, args):
-                local_env[param] = arg
-
-            local_env[node.value] = func
-            return self.evaluate(func.body, local_env)
+            if node.type == IDENTIFIER:
+                if node.value in env:
+                    return env[node.value]
+                else:
+                    raise ValueError(f"Undefined variable '{node.value}'")
 
         return node.value
+
+    def function_call(self, node, env):
+        func = env.get(node.value)
+
+        if func is None:
+            raise ValueError(f"Undefined function '{node.value}'")
+
+        if not isinstance(func, Function):
+            raise ValueError(f"'{node.value}' is not callable")
+
+        args = [self.evaluate(child, env) for child in node.children]
+        if len(args) != len(func.param_names):
+            raise ValueError(f"Function '{node.value}' expects {len(func.param_names)} arguments, got {len(args)}")
+
+        # Create a new local environment for the function call
+        local_env = dict(env)
+        for param, arg in zip(func.param_names, args):
+            local_env[param] = arg
+
+        local_env[node.value] = func
+        return self.evaluate(func.body, local_env)
