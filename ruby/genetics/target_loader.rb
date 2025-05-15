@@ -1,4 +1,3 @@
-# lib/target_loader.rb
 require 'rmagick'
 
 module TargetLoader

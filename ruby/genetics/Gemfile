@@ -1,7 +1,4 @@
-# frozen_string_literal: true
-
 source "https://rubygems.org"
 
-gem 'rmagick'      # для работы с изображениями и рисования отрезков
-gem 'optparse'     # для парсинга CLI-аргументов (входит в stdlib)
-gem 'gruff'        # для графика зависимости качества от поколения
+gem 'rmagick'
+gem 'optparse'

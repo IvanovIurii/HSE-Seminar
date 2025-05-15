@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    observer (0.1.2)
+    optparse (0.6.0)
+    pkg-config (1.6.2)
+    rmagick (5.5.0)
+      observer (~> 0.1)
+      pkg-config (~> 1.4)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  optparse
+  rmagick
+
+BUNDLED WITH
+   1.17.2
