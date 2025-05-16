@@ -20,21 +20,24 @@ def create_offspring(parent)
   [parent] + children
 end
 
+images = []
+
 # generations
 (1..1000).each do |gen|
   candidates = create_offspring(genotype)
 
-  img = nil
   scores = candidates.map.with_index do |genes, idx|
     img = Renderer.render(genes)
-    score = Metrics.manhattan(img, target)
     img.write(File.join(OUTPUT_DIR, "gen%03d_#%02d.png" % [gen, idx]))
+    score = Metrics.manhattan(img, target)
+    images.push(img)
     score
   end
 
-  img.write(File.join(OUTPUT_DIR, "selected_gen%03d.png" % gen))
-
   current_best, best_idx = scores.max, scores.index(scores.max)
+
+  best_img = images[best_idx]
+  best_img.write(File.join(OUTPUT_DIR, "selected_gen%03d.png" % gen))
 
   if current_best > best_score
     genotype = candidates[best_idx]

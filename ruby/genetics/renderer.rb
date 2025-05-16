@@ -1,4 +1,3 @@
-# lib/renderer.rb
 require 'rmagick'
 require_relative 'genotype'
 
@@ -51,9 +50,7 @@ module Renderer
     genes = genotype.genes
     length = genes[15]
 
-    random_genes = genes.sample(SEGMENT_SAMPLE_SIZE)
-    stems = calculate_stems(random_genes)
-
+    stems = calculate_stems(genes)
     segments = render_segments(length: length, stems: stems)
 
     img = Image.new(CANVAS_SIZE, CANVAS_SIZE) { |opts| opts.background_color = BACKGROUND_COLOR }
