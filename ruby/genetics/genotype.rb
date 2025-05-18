@@ -1,22 +1,23 @@
-class Genotype
-  attr_reader :genes
+GENE_COUNT = 15
+GENE_RANGE = -9..9
+LAST_GENE_RANGE = 2..12
 
-  def initialize(genes)
-    @genes = genes
-  end
+def get_random_genotype
+  Array.new(GENE_COUNT) { rand(GENE_RANGE) } + [rand(LAST_GENE_RANGE)]
+end
 
-  def self.random
-    genes = Array.new(15) { rand(-9..9) } + [rand(2..12)]
-    new(genes)
-  end
+def mutate_one(genotype)
+  idx = rand(0...GENE_COUNT + 1)
+  delta = [1, -1].sample
 
-  def mutate_one
-    new_genes = genes.dup
-    idx = rand(0...16)
-    delta = [1, -1].sample
-    limit = idx < 15 ? (-9..9) : (2..12)
-    new_value = (new_genes[idx] + delta).clamp(limit.min, limit.max)
-    new_genes[idx] = new_value
-    self.class.new(new_genes)
+  genotype
+    .each_with_index
+    .map do |gene, i|
+    if i == idx
+      limit = i < GENE_COUNT ? (GENE_RANGE) : (LAST_GENE_RANGE)
+      (gene + delta).clamp(limit.min, limit.max)
+    else
+      gene
+    end
   end
 end

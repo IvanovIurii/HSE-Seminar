@@ -8,28 +8,33 @@ MAX_STAGNANT = 10
 
 Dir.mkdir(OUTPUT_DIR) unless Dir.exist?(OUTPUT_DIR)
 
-genotype = Genotype.random
-target = TargetLoader.load('sample.png')
+target = load_target_image('sample.png')
+
+# this holds an array of genes
+genotype = get_random_genotype
 
 best_score = 0
 stagnant = 0
 
 # Generate parent + 9 mutated offspring
 def create_offspring(parent)
-  children = (0...9).map { parent.mutate_one }
+  children = (0...9).map { mutate_one(parent) }
   [parent] + children
 end
 
 images = []
 
+puts "Start evolution"
+
 # generations
 (1..1000).each do |gen|
+  puts "Generation: " + gen.to_s
   candidates = create_offspring(genotype)
 
   scores = candidates.map.with_index do |genes, idx|
     img = Renderer.render(genes)
     img.write(File.join(OUTPUT_DIR, "gen%03d_#%02d.png" % [gen, idx]))
-    score = Metrics.manhattan(img, target)
+    score = manhattan_diff(img, target)
     images.push(img)
     score
   end
@@ -50,3 +55,5 @@ images = []
   break if stagnant >= MAX_STAGNANT
 
 end
+
+puts "End"

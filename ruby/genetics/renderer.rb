@@ -46,8 +46,7 @@ module Renderer
     segments
   end
 
-  def self.render(genotype)
-    genes = genotype.genes
+  def self.render(genes)
     length = genes[15]
 
     stems = calculate_stems(genes)
