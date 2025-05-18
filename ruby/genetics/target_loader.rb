@@ -1,12 +1,9 @@
 require 'rmagick'
+include Magick
 
-module TargetLoader
-  include Magick
-
-  def self.load(path)
-    img = Image.read(path).first
-    img = img.resize_to_fill(150, 150)
-    img = img.quantize(256, GRAYColorspace)
-    img
-  end
+def load_target_image(path, size: 150)
+  Image.read(path)
+       .first
+       .resize_to_fill(size, size)
+       .quantize(256, GRAYColorspace)
 end
