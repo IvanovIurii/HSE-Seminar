@@ -7,3 +7,4 @@ def load_target_image(path, size: 150)
        .resize_to_fill(size, size)
        .quantize(256, GRAYColorspace)
 end
+

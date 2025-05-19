@@ -51,4 +51,5 @@ puts "Start evolution"
 
   break if stagnant >= MAX_STAGNANT
 end
+
 puts "End"
