@@ -4,33 +4,33 @@ require_relative 'target_loader'
 require_relative 'metrics'
 
 OUTPUT_DIR = 'output'
-MAX_STAGNANT = 10
-OFFSPRING = 9
+MAX_STAGNANT = 100
+OFFSPRING = 10
 MAX_GEN = 1_000
 
 Dir.mkdir(OUTPUT_DIR) unless Dir.exist?(OUTPUT_DIR)
-initial_target = load_target_image('sample.png')
+target = load_target_image('sample.png')
 
 # this holds an array of genes
 initial_genotype = get_random_genotype
 
-create_offspring = -> parent {
-  [parent] + OFFSPRING.times.map { mutate_one(parent) }
+create_offsprings = -> parent {
+  OFFSPRING.times.map { mutate_one(parent) }
 }
 
 puts "Start evolution"
 
 initial_state = {
   genotype: initial_genotype,
-  best_score: 0,
+  best_score: Float::INFINITY,
   stagnant: 0,
-  generation: 1,
-  target: initial_target
+  generation: 0,
+  target: target
 }
 
 # always returns a new state instead of mutations
 evolve = ->(state, gen) do
-  candidates = create_offspring.(state[:genotype])
+  candidates = create_offsprings.(state[:genotype])
 
   scores, images = candidates.map { |genes|
     img = Renderer.render(genes)
@@ -38,13 +38,14 @@ evolve = ->(state, gen) do
     [score, img]
   }.transpose
 
-  current_best = scores.max
+  current_best = scores.min
+
   best_idx = scores.index(current_best)
   best_genes = candidates[best_idx]
   best_img = images[best_idx]
 
   # compute next state immutably
-  if current_best > state[:best_score]
+  if current_best < state[:best_score]
     new_stagnant = 0
     new_best_score = current_best
     new_genotype = best_genes
@@ -65,8 +66,11 @@ end
 
 (1..MAX_GEN).reduce(initial_state) do |state, gen|
   puts "Generation #{gen}"
+
   next_state = evolve.(state, gen)
-  # impure IO
+  # impure operations
+  puts "Score: #{next_state[:best_score]}"
+
   next_state[:target].write(File.join(OUTPUT_DIR, "selected_gen%03d.png" % gen))
   break next_state if next_state[:stagnant] >= MAX_STAGNANT
   next_state

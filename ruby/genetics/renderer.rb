@@ -63,6 +63,6 @@ module Renderer
     end
 
     draw.draw(img)
-    img
+    return img.quantize(256, GRAYColorspace)
   end
 end

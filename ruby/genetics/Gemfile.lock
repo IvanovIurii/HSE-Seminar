@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    minitest (5.11.3)
     observer (0.1.2)
     optparse (0.6.0)
     pkg-config (1.6.2)
@@ -12,6 +13,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  minitest
   optparse
   rmagick
 

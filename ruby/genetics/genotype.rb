@@ -8,6 +8,10 @@ end
 
 def mutate_one(genotype)
   idx = rand(0...GENE_COUNT + 1)
+  mutate_one_pure(genotype, idx)
+end
+
+def mutate_one_pure(genotype, idx)
   delta = [1, -1].sample
 
   genotype
