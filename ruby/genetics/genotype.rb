@@ -3,11 +3,11 @@ GENE_RANGE = -9..9
 LAST_GENE_RANGE = 2..12
 
 def get_random_genotype
-  Array.new(GENE_COUNT) { rand(GENE_RANGE) } + [rand(LAST_GENE_RANGE)]
+  Array.new(GENE_COUNT) { rand(GENE_RANGE) } + [rand(LAST_GENE_RANGE)].freeze
 end
 
 def mutate_one(genotype)
-  idx = rand(0...GENE_COUNT + 1)
+  idx = rand(0...7)
   mutate_one_pure(genotype, idx)
 end
 
@@ -16,12 +16,13 @@ def mutate_one_pure(genotype, idx)
 
   genotype
     .each_with_index
-    .map do |gene, i|
-    if i == idx
-      limit = i < GENE_COUNT ? (GENE_RANGE) : (LAST_GENE_RANGE)
-      (gene + delta).clamp(limit.min, limit.max)
-    else
-      gene
-    end
-  end
+    .map { |gene, i|
+      if i == idx
+        limit = i < GENE_COUNT ? (GENE_RANGE) : (LAST_GENE_RANGE)
+        (gene + delta).clamp(limit.min, limit.max)
+      else
+        gene
+      end
+    }
+    .freeze
 end

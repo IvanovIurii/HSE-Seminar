@@ -9,7 +9,6 @@ module Renderer
   BACKGROUND_COLOR = 'white'
   LINE_COLOR = 'black'
   LINE_WIDTH = 2
-  SEGMENT_SAMPLE_SIZE = 7
 
   # this was taken from https://github.com/mtzynb/biomorph/blob/master/js/biomorph.js
   def self.calculate_stems(genes)
@@ -47,14 +46,18 @@ module Renderer
   end
 
   def self.render(genes)
-    length = genes[15]
+    img = Image.new(CANVAS_SIZE, CANVAS_SIZE) { |opts| opts.background_color = BACKGROUND_COLOR }
+    draw = Draw.new
 
+    length = genes[-1]
+    draw_image(img, draw, genes, length)
+  end
+
+  # pure
+  def self.draw_image(img, draw, genes, length)
     stems = calculate_stems(genes)
     segments = render_segments(length: length, stems: stems)
 
-    img = Image.new(CANVAS_SIZE, CANVAS_SIZE) { |opts| opts.background_color = BACKGROUND_COLOR }
-
-    draw = Draw.new
     draw.stroke(LINE_COLOR).stroke_width(LINE_WIDTH)
 
     segments.each do |seg|
@@ -63,6 +66,6 @@ module Renderer
     end
 
     draw.draw(img)
-    return img.quantize(256, GRAYColorspace)
+    img.quantize(256, GRAYColorspace)
   end
 end
