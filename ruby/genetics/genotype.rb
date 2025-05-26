@@ -7,13 +7,12 @@ def get_random_genotype
 end
 
 def mutate_one(genotype)
-  idx = rand(0...7)
-  mutate_one_pure(genotype, idx)
+  idx = rand(0...GENE_COUNT)
+  delta = [1, -1].sample
+  mutate_one_pure(genotype, idx, delta)
 end
 
-def mutate_one_pure(genotype, idx)
-  delta = [1, -1].sample
-
+def mutate_one_pure(genotype, idx, delta)
   genotype
     .each_with_index
     .map { |gene, i|

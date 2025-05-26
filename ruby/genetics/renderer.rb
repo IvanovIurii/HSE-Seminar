@@ -53,7 +53,6 @@ module Renderer
     draw_image(img, draw, genes, length)
   end
 
-  # pure
   def self.draw_image(img, draw, genes, length)
     stems = calculate_stems(genes)
     segments = render_segments(length: length, stems: stems)

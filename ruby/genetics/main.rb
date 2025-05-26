@@ -3,16 +3,22 @@ require_relative 'renderer'
 require_relative 'metrics'
 
 OUTPUT_DIR = 'output'
-MAX_STAGNANT = 25
-OFFSPRING = 9
+MAX_STAGNANT = 10
+OFFSPRING = 10
 MAX_GEN = 100
 
 Dir.mkdir(OUTPUT_DIR) unless Dir.exist?(OUTPUT_DIR)
 
-# this holds an array of genes
 initial_genotype = get_random_genotype
-target = Renderer.render(initial_genotype)
-target.write(File.join(OUTPUT_DIR, "initial.png"))
+initial = Renderer.render(initial_genotype)
+
+# create black square
+target = Image.new(150, 150) do |opts|
+  opts.background_color = "black"
+end
+
+target.write(File.join(OUTPUT_DIR, "target.png"))
+initial.write(File.join(OUTPUT_DIR, "initial.png"))
 
 create_offsprings = -> parent {
   OFFSPRING.times.map { mutate_one(parent) }
@@ -25,7 +31,8 @@ initial_state = {
   best_score: Float::INFINITY,
   stagnant: 0,
   generation: 0,
-  target: target
+  target: target,
+  image: nil
 }
 
 # always returns a new state instead of mutations
@@ -33,13 +40,11 @@ evolve = ->(state, candidates, gen) {
   scores, images = candidates.map { |genes|
     img = Renderer.render(genes)
     score = manhattan_diff(img, state[:target])
+    puts score
     [score, img]
   }.transpose
 
-  current_best = scores.filter { |x| x != 0 }.min
-  if current_best.nil?
-    return state
-  end
+  current_best = scores.min
 
   best_idx = scores.index(current_best)
   best_genes = candidates[best_idx]
@@ -60,7 +65,8 @@ evolve = ->(state, candidates, gen) {
     best_score: new_best_score,
     stagnant: new_stagnant,
     generation: gen,
-    target: best_img,
+    target: state[:target],
+    image: best_img
   }
 }
 
@@ -74,7 +80,7 @@ evolve = ->(state, candidates, gen) {
   next_state = evolve.(state, candidates, gen)
 
   # impure operations
-  next_state[:target].write(File.join(OUTPUT_DIR, "selected_gen%03d.png" % gen))
+  next_state[:image].write(File.join(OUTPUT_DIR, "selected_gen%03d.png" % gen))
   break next_state if next_state[:stagnant] >= MAX_STAGNANT
   next_state
 end
